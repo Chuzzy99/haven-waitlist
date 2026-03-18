@@ -4,10 +4,16 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
+let supabase: any;
+
 if (!supabaseUrl || !supabaseKey || supabaseUrl === "your_supabase_project_url") {
-  console.warn("⚠️ Supabase credentials not configured. Please update .env.local with actual Supabase URL and service key.");
-  // Create a mock client that returns helpful errors
-  throw new Error("Supabase not configured. Please update your .env.local file with actual Supabase credentials.");
+  if (process.env.NODE_ENV === "production") {
+    console.warn("⚠️ Supabase credentials not configured. Please set them in your deployment dashboard.");
+  } else {
+    console.warn("⚠️ Supabase credentials not configured. Please update .env.local with actual Supabase URL and service key.");
+  }
+} else {
+  supabase = createClient(supabaseUrl, supabaseKey);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export { supabase };
