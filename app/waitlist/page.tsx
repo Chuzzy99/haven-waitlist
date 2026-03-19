@@ -16,35 +16,6 @@ export default function WaitlistPage() {
   const [count, setCount] = useState(0);
   const emailRef = useRef<HTMLInputElement>(null);
 
-  // Contact form state
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactMessage, setContactMessage] = useState("");
-  const [contactStatus, setContactStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-
-  const submitContact = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!contactEmail.trim() || !contactMessage.trim()) return;
-    setContactStatus("submitting");
-    try {
-      const res = await fetch("https://formspree.io/f/mvzwlqdb", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: contactName, email: contactEmail, message: contactMessage }),
-      });
-      if (res.ok) {
-        setContactStatus("success");
-        setContactName("");
-        setContactEmail("");
-        setContactMessage("");
-      } else {
-        setContactStatus("error");
-      }
-    } catch {
-      setContactStatus("error");
-    }
-  };
-
   useEffect(() => {
     fetch("/api/waitlist")
       .then((r) => r.json())
@@ -71,6 +42,18 @@ export default function WaitlistPage() {
     setLoading(true);
     setError("");
     try {
+      // 1. Submit to Formspree
+      try {
+        await fetch("https://formspree.io/f/mvzwlqdb", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, faith }),
+        });
+      } catch (err) {
+        console.error("Formspree error:", err);
+      }
+
+      // 2. Submit to internal API (Supabase)
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1279,206 +1262,7 @@ export default function WaitlistPage() {
               </div>
             )}
           </section>
-          {/* ── CONTACT US ── */}
-          <section id="contact" style={{ paddingBottom: 100 }}>
-            <div
-              style={{
-                textAlign: "center",
-                marginBottom: 36,
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "Lato, sans-serif",
-                  fontSize: 11,
-                  color: "#D4AF37",
-                  fontWeight: 700,
-                  letterSpacing: 2,
-                  marginBottom: 12,
-                }}
-              >
-                GET IN TOUCH
-              </p>
-              <h2
-                style={{
-                  fontFamily: "Cormorant Garamond, serif",
-                  fontSize: "clamp(28px, 5vw, 44px)",
-                  color: "#F0E6D0",
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                }}
-              >
-                Reach out to us.
-              </h2>
-            </div>
-            <div
-              style={{
-                background: "linear-gradient(145deg, #0a0a0a, #1a1a1a)",
-                border: "1px solid rgba(212,175,55,0.3)",
-                borderRadius: 24,
-                padding: "clamp(28px, 6vw, 52px)",
-              }}
-            >
-              {contactStatus === "success" ? (
-                <div style={{ textAlign: "center", padding: "40px 0" }}>
-                  <div style={{ fontSize: 40, marginBottom: 16 }}>✦</div>
-                  <h3
-                    style={{
-                      fontFamily: "Cormorant Garamond, serif",
-                      fontSize: 28,
-                      color: "#D4AF37",
-                      marginBottom: 12,
-                    }}
-                  >
-                    Message Sent
-                  </h3>
-                  <p
-                    style={{
-                      fontFamily: "Lora, serif",
-                      fontSize: 15,
-                      color: "#A38B63",
-                      fontStyle: "italic",
-                    }}
-                  >
-                    Thank you for reaching out. We will get back to you shortly.
-                  </p>
-                  <button
-                    onClick={() => setContactStatus("idle")}
-                    style={{
-                      marginTop: 24,
-                      background: "transparent",
-                      border: "1px solid rgba(212,175,55,0.4)",
-                      padding: "10px 24px",
-                      borderRadius: 12,
-                      color: "#D4AF37",
-                      cursor: "pointer",
-                      fontFamily: "Lato, sans-serif",
-                    }}
-                  >
-                    Send another message
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={submitContact}>
-                  <div style={{ marginBottom: 14 }}>
-                    <label
-                      style={{
-                        fontFamily: "Lato, sans-serif",
-                        fontSize: 10,
-                        color: "#D4AF37",
-                        fontWeight: 700,
-                        letterSpacing: 1.2,
-                        display: "block",
-                        marginBottom: 8,
-                      }}
-                    >
-                      YOUR NAME
-                    </label>
-                    <input
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      placeholder="Your name…"
-                      style={{
-                        width: "100%",
-                        background: "#000000",
-                        border: "1px solid rgba(212,175,55,0.3)",
-                        borderRadius: 12,
-                        padding: "14px 16px",
-                        color: "#D4AF37",
-                        fontSize: 15,
-                        fontStyle: "italic",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: 14 }}>
-                    <label
-                      style={{
-                        fontFamily: "Lato, sans-serif",
-                        fontSize: 10,
-                        color: "#D4AF37",
-                        fontWeight: 700,
-                        letterSpacing: 1.2,
-                        display: "block",
-                        marginBottom: 8,
-                      }}
-                    >
-                      YOUR EMAIL *
-                    </label>
-                    <input
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      style={{
-                        width: "100%",
-                        background: "#000000",
-                        border: "1px solid rgba(212,175,55,0.3)",
-                        borderRadius: 12,
-                        padding: "14px 16px",
-                        color: "#D4AF37",
-                        fontSize: 15,
-                        fontStyle: "italic",
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginBottom: 24 }}>
-                    <label
-                      style={{
-                        fontFamily: "Lato, sans-serif",
-                        fontSize: 10,
-                        color: "#D4AF37",
-                        fontWeight: 700,
-                        letterSpacing: 1.2,
-                        display: "block",
-                        marginBottom: 8,
-                      }}
-                    >
-                      MESSAGE *
-                    </label>
-                    <textarea
-                      value={contactMessage}
-                      onChange={(e) => setContactMessage(e.target.value)}
-                      placeholder="How can we help you?"
-                      required
-                      rows={4}
-                      style={{
-                        width: "100%",
-                        background: "#000000",
-                        border: "1px solid rgba(212,175,55,0.3)",
-                        borderRadius: 12,
-                        padding: "14px 16px",
-                        color: "#D4AF37",
-                        fontSize: 15,
-                        fontStyle: "italic",
-                        resize: "vertical",
-                      }}
-                    />
-                  </div>
-                  {contactStatus === "error" && (
-                    <p
-                      style={{
-                        fontFamily: "Lora, serif",
-                        fontSize: 13,
-                        color: "#D4AF37",
-                        marginBottom: 14,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      Something went wrong. Please try again.
-                    </p>
-                  )}
-                  <button
-                    type="submit"
-                    className="submit-btn"
-                    disabled={contactStatus === "submitting"}
-                  >
-                    {contactStatus === "submitting" ? "Sending…" : "Send Message ✦"}
-                  </button>
-                </form>
-              )}
-            </div>
-          </section>
+
 
           {/* ── FOOTER ── */}
           <footer
