@@ -40,16 +40,37 @@ export default function WaitlistPage() {
       setError("Please enter your email address.");
       return;
     }
-    setLoading(true);
-    setError("");
     try {
+      let waitlistPosition = 0;
+
+      // 1. Submit to internal API (Supabase) exactly once to generate the sequence number
+      try {
+        const res = await fetch("/api/waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, faith }),
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          waitlistPosition = data.position;
+          setPosition(data.position);
+          setTotal(data.total || count + 1);
+        } else {
+          console.warn("Database error or not configured:", data.error || data.setupRequired);
+        }
+      } catch (err) {
+        console.warn("Internal waitlist API failed:", err);
+      }
+
       let emailSuccess = false;
-      // 1. Send Welcome Email via EmailJS
+      // 2. Send Welcome Email via EmailJS with the retrieved Serial Number
       try {
         const templateParams = {
           to_name: name || "Friend",
           to_email: email,
           deity: faith === "christian" ? "God" : faith === "muslim" ? "Allah" : "God / Allah",
+          position: waitlistPosition > 0 ? waitlistPosition : "",
         };
         
         const emRes = await emailjs.send(
@@ -61,25 +82,6 @@ export default function WaitlistPage() {
         if (emRes.status === 200) emailSuccess = true;
       } catch (err) {
         console.error("EmailJS error:", err);
-      }
-
-      // 2. Submit to internal API (Supabase)
-      try {
-        const res = await fetch("/api/waitlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, faith }),
-        });
-        const data = await res.json();
-        
-        if (res.ok) {
-          setPosition(data.position);
-          setTotal(data.total || count + 1);
-        } else {
-          console.warn("Database error or not configured:", data.error || data.setupRequired);
-        }
-      } catch (err) {
-        console.warn("Internal waitlist API failed:", err);
       }
 
       // If at least one succeeded (or if we prefer to assume EmailJS works)
