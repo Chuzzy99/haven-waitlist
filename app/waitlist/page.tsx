@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import emailjs from "@emailjs/browser";
 
 type Faith = "christian" | "muslim" | "both";
 type Step = "form" | "success";
@@ -42,17 +43,24 @@ export default function WaitlistPage() {
     setLoading(true);
     setError("");
     try {
-      let formspreeSuccess = false;
-      // 1. Submit to Formspree
+      let emailSuccess = false;
+      // 1. Send Welcome Email via EmailJS
       try {
-        const fsRes = await fetch("https://formspree.io/f/mvzwlqdb", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, faith }),
-        });
-        if (fsRes.ok) formspreeSuccess = true;
+        const templateParams = {
+          to_name: name || "Friend",
+          to_email: email,
+          deity: faith === "christian" ? "God" : faith === "muslim" ? "Allah" : "God / Allah",
+        };
+        
+        const emRes = await emailjs.send(
+          "service_cypmfup",
+          "template_7cixj27",
+          templateParams,
+          "R1A4JGpkiEa6TzO01"
+        );
+        if (emRes.status === 200) emailSuccess = true;
       } catch (err) {
-        console.error("Formspree error:", err);
+        console.error("EmailJS error:", err);
       }
 
       // 2. Submit to internal API (Supabase)
@@ -74,8 +82,8 @@ export default function WaitlistPage() {
         console.warn("Internal waitlist API failed:", err);
       }
 
-      // If at least one succeeded (or if we prefer to assume Formspree works)
-      if (formspreeSuccess || position > 0) {
+      // If at least one succeeded (or if we prefer to assume EmailJS works)
+      if (emailSuccess || position > 0) {
         setStep("success");
       } else {
         // Fallback catch if everything totally fails
