@@ -2,13 +2,13 @@
 import { useState, useEffect, useRef } from "react";
 import emailjs from "@emailjs/browser";
 
-type Faith = "christian" | "muslim" | "both";
+type Faith = "christian" | "muslim";
 type Step = "form" | "success";
 
 export default function WaitlistPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [faith, setFaith] = useState<Faith>("both");
+  const [faith, setFaith] = useState<Faith>("christian");
   const [step, setStep] = useState<Step>("form");
   const [position, setPosition] = useState(0);
   const [total, setTotal] = useState(0);
@@ -70,7 +70,7 @@ export default function WaitlistPage() {
         const templateParams = {
           to_name: name || "Friend",
           to_email: email,
-          deity: faith === "christian" ? "God" : faith === "muslim" ? "Allah" : "God / Allah",
+          deity: faith === "muslim" ? "Allah" : "God",
           position: waitlistPosition > 0 ? waitlistPosition : "",
         };
         
@@ -800,7 +800,7 @@ export default function WaitlistPage() {
                 {
                   icon: "✦",
                   label: "Divine Voice",
-                  body: "What Christ or Allah is saying to you right now through sacred text.",
+                  body: faith === "muslim" ? "What Allah is saying to you right now through sacred text." : "What Christ is saying to you right now through sacred text.",
                 },
                 {
                   icon: "✦",
@@ -815,7 +815,7 @@ export default function WaitlistPage() {
                 {
                   icon: "✦",
                   label: "Your Step",
-                  body: "One gentle, practical action to walk closer to God today.",
+                  body: faith === "muslim" ? "One gentle, practical action to walk closer to Allah today." : "One gentle, practical action to walk closer to God today.",
                 },
               ].map((item, i) => (
                 <div key={i} className="feature-card">
@@ -1037,13 +1037,7 @@ export default function WaitlistPage() {
                           color: "#22C55E",
                           dim: "#1a1a1a",
                         },
-                        {
-                          value: "both" as Faith,
-                          label: "Both",
-                          icon: "✦",
-                          color: "#D4AF37",
-                          dim: "#1a1a1a",
-                        },
+
                       ].map((f) => (
                         <button
                           key={f.value}
@@ -1156,8 +1150,8 @@ export default function WaitlistPage() {
                     marginBottom: 36,
                   }}
                 >
-                  {name ? `${name}, you're` : "You're"} on the waitlist. God placed
-                  this on your heart for a reason. We'll be in touch.
+                  {name ? `${name}, you're` : "You're"} on the waitlist.{" "}
+                  {faith === "muslim" ? "Allah" : "God"} placed this on your heart for a reason. We'll be in touch.
                 </p>
                 {/* Position */}
                 {position > 0 && (
@@ -1231,7 +1225,9 @@ export default function WaitlistPage() {
                 >
                   <a
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      "Just joined the waitlist for Haven — a daily spiritual companion for Christians and Muslims. Pour out your heart. Receive God's Word. \n\n"
+                      faith === "muslim"
+                        ? "Just joined the waitlist for Haven — a daily spiritual companion. Pour out your heart. Receive guidance from Allah. \n\n"
+                        : "Just joined the waitlist for Haven — a daily spiritual companion. Pour out your heart. Receive God's Word. \n\n"
                     )}&url=${encodeURIComponent(
                       process.env.NEXT_PUBLIC_SITE_URL || "https://yourhaven.app"
                     )}`}
@@ -1253,7 +1249,9 @@ export default function WaitlistPage() {
                   </a>
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
-                      "I just joined the waitlist for Haven — a daily spiritual companion for Christians and Muslims. Check it out: " +
+                      (faith === "muslim"
+                        ? "I just joined the waitlist for Haven — a daily spiritual companion. Walk closer to Allah every day. Check it out: "
+                        : "I just joined the waitlist for Haven — a daily spiritual companion. Walk closer to God every day. Check it out: ") +
                         (process.env.NEXT_PUBLIC_SITE_URL ||
                           "https://yourhaven.app")
                     )}`}

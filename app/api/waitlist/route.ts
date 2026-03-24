@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       .from("waitlist")
       .insert({
         email: email.toLowerCase().trim(),
-        faith: faith || "both",
+        faith: faith || "christian",
         name: name || null,
       })
       .select("position")
