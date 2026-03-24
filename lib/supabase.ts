@@ -14,6 +14,12 @@ if (!supabaseUrl || !supabaseKey || supabaseUrl === "your_supabase_project_url")
   }
 } else {
   try {
+    // Diagnostic logging for Vercel debugging
+    if (process.env.NODE_ENV === "production") {
+      console.log("Supabase URL detected:", supabaseUrl.substring(0, 12) + "...");
+      console.log("Supabase Key detected:", supabaseKey.substring(0, 5) + "...");
+    }
+    
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log("✅ Supabase client initialized.");
   } catch (err) {
