@@ -8,12 +8,17 @@ let supabase: any;
 
 if (!supabaseUrl || !supabaseKey || supabaseUrl === "your_supabase_project_url") {
   if (process.env.NODE_ENV === "production") {
-    console.warn("⚠️ Supabase credentials not configured. Please set them in your deployment dashboard.");
+    console.error("❌ SUPABASE_URL or SUPABASE_SERVICE_KEY is missing in Vercel. Please check Project Settings -> Environment Variables.");
   } else {
-    console.warn("⚠️ Supabase credentials not configured. Please update .env.local with actual Supabase URL and service key.");
+    console.warn("⚠️ Supabase credentials not configured in .env.local.");
   }
 } else {
-  supabase = createClient(supabaseUrl, supabaseKey);
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log("✅ Supabase client initialized.");
+  } catch (err) {
+    console.error("❌ Failed to initialize Supabase client:", err);
+  }
 }
 
 export { supabase };

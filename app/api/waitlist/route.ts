@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Import supabase with error handling
-let supabase: any;
-try {
-  supabase = require("@/lib/supabase").supabase;
-} catch (error) {
-  console.error("Supabase not configured:", error);
-  supabase = null;
-}
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   try {

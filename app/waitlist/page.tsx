@@ -59,17 +59,25 @@ export default function WaitlistPage() {
           setPosition(data.position);
           setTotal(data.total || count + 1);
         } else {
-          console.warn("Database error:", data.error || data.setupRequired);
+          console.error("Database error:", data.error || data.setupRequired);
+          setError(data.error || "Submission failed. Please try again.");
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        console.warn("Internal waitlist API failed:", err);
+        console.error("Internal waitlist API failed:", err);
+        setError("Network error. Please try again.");
+        setLoading(false);
+        return;
       }
 
       // 2. Send Welcome Email via EmailJS with the waitlist position
       try {
         const templateParams = {
           to_name: name || "Friend",
-          to_email: email,
+          to_email: email, // standard
+          email: email,    // fallback
+          user_email: email, // fallback
           deity: faith === "muslim" ? "Allah" : "God",
           position: waitlistPosition > 0 ? waitlistPosition : "",
         };
@@ -86,7 +94,8 @@ export default function WaitlistPage() {
 
       // Show success screen
       setStep("success");
-    } catch {
+    } catch (err) {
+      console.error("General submission error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
