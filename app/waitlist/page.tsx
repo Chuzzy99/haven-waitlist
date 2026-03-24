@@ -40,10 +40,12 @@ export default function WaitlistPage() {
       setError("Please enter your email address.");
       return;
     }
+    setLoading(true);
+    setError("");
     try {
       let waitlistPosition = 0;
 
-      // 1. Submit to internal API (Supabase) exactly once to generate the sequence number
+      // 1. Submit to internal API (Supabase) to store entry and get position
       try {
         const res = await fetch("/api/waitlist", {
           method: "POST",
@@ -57,14 +59,13 @@ export default function WaitlistPage() {
           setPosition(data.position);
           setTotal(data.total || count + 1);
         } else {
-          console.warn("Database error or not configured:", data.error || data.setupRequired);
+          console.warn("Database error:", data.error || data.setupRequired);
         }
       } catch (err) {
         console.warn("Internal waitlist API failed:", err);
       }
 
-      let emailSuccess = false;
-      // 2. Send Welcome Email via EmailJS with the retrieved Serial Number
+      // 2. Send Welcome Email via EmailJS with the waitlist position
       try {
         const templateParams = {
           to_name: name || "Friend",
@@ -73,26 +74,21 @@ export default function WaitlistPage() {
           position: waitlistPosition > 0 ? waitlistPosition : "",
         };
         
-        const emRes = await emailjs.send(
+        await emailjs.send(
           "service_cypmfup",
           "template_7cixj27",
           templateParams,
           "R1A4JGpkiEa6TzO01"
         );
-        if (emRes.status === 200) emailSuccess = true;
       } catch (err) {
         console.error("EmailJS error:", err);
       }
 
-      // If at least one succeeded (or if we prefer to assume EmailJS works)
-      if (emailSuccess || position > 0) {
-        setStep("success");
-      } else {
-        // Fallback catch if everything totally fails
-        setStep("success"); // We'll show success anyway to not block user
-      }
+      // Show success screen
+      setStep("success");
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
