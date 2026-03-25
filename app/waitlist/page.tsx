@@ -88,6 +88,25 @@ export default function WaitlistPage() {
           templateParams,
           "R1A4JGpkiEa6TzO01"
         );
+
+        // 3. Send Admin Notification Email
+        // Trigger an alert to the admin's email
+        try {
+          await emailjs.send(
+            "service_cypmfup",
+            "template_admin_alert", // Replace with your new admin template ID
+            {
+              admin_email: "hello@yourhaven.app", // This is where the alert goes
+              new_user_name: name || "Someone",
+              new_user_email: email,
+              new_user_faith: faith,
+              position: waitlistPosition,
+            },
+            "R1A4JGpkiEa6TzO01"
+          );
+        } catch (adminErr) {
+          console.warn("Admin notification failed:", adminErr);
+        }
       } catch (err) {
         console.error("EmailJS Error:", err);
       }
