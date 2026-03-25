@@ -94,10 +94,13 @@ export default function WaitlistPage() {
         try {
           await emailjs.send(
             "service_cypmfup",
-            "template_admin_alert", // Replace with your new admin template ID
+            "template_bs12727", // Admin alert template ID
             {
-              admin_email: "hello@yourhaven.app", // This is where the alert goes
-              new_user_name: name || "Someone",
+              admin_email: "ecstasyi909@gmail.com", 
+              to_name: name || "Someone",          // Matching their template variables
+              email: email,                         // Matching their template variables
+              deity: faith === "muslim" ? "Allah" : "God",
+              new_user_name: name || "Someone", 
               new_user_email: email,
               new_user_faith: faith,
               position: waitlistPosition,
